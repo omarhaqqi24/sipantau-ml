@@ -1,27 +1,15 @@
-from pydantic import BaseModel
 from fastapi import FastAPI, HTTPException
 from app.model import predict
+from app.schema import IrisRequest, PredictionResponse
 import numpy as np
 
 app = FastAPI()
-
-class IrisRequest(BaseModel):
-    harga_petani_h_min_2: float
-    harga_petani_h_min_3: float
-    harga_petani_h_min_4: float
-    
-    harga_pasar_h_min_1: float
-    harga_pasar_h_min_2: float
-    harga_pasar_h_min_3: float
-    
-    bulan: int
-    trend: int
 
 @app.get("/")
 def root():
     return {"message": "ML is service running"}
 
-@app.post("/predict")
+@app.post("/predict", response_model=PredictionResponse)
 def predict_api(data: IrisRequest):
     try:
         features = np.array([[
@@ -33,8 +21,17 @@ def predict_api(data: IrisRequest):
             data.harga_pasar_h_min_3,
             data.bulan,
             data.trend
-        ]])
+        ]], dtype=float)
+        
+        if np.isnan(features).any():
+            raise HTTPException(status_code=400, detail="Invalid input")
         
         return predict(features)
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500,detail=str(e))
+
+@app.get("/health")
+def health():
+    return {"status": "ok"}
