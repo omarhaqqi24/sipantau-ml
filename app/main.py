@@ -13,14 +13,13 @@ def root():
 def predict_api(data: IrisRequest):
     try:
         features = np.array([[
+            data.harga_petani_h_min_0,
+            data.harga_petani_h_min_1,
             data.harga_petani_h_min_2,
             data.harga_petani_h_min_3,
-            data.harga_petani_h_min_4,
+            data.harga_pasar_h_min_0,
             data.harga_pasar_h_min_1,
             data.harga_pasar_h_min_2,
-            data.harga_pasar_h_min_3,
-            data.bulan,
-            data.trend
         ]], dtype=float)
         
         if np.isnan(features).any():
